@@ -1,0 +1,4 @@
+*.zip
+*.gz
+/pa1/python-mnist/*
+/pa1/data/*
