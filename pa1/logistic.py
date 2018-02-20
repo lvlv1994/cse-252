@@ -5,6 +5,10 @@ Created on Tue Jan 16 18:19:17 2018
 
 @author: chunyilyu
 """
+
+'''
+这段code展示了Logistic Regression的梯度下降实现，这是machine learning领域十分基础的课程，虽说之后也手动实现了很多更复杂的算法，但是这段算法对我日后的理解十分有帮助，我把他写成了一个包，可以直接调用，也体现了python面向对象的编程
+'''
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -24,8 +28,10 @@ class logisticRegression:
         self.train_error = []
         self.holdon_error = []
         self.weight_record = []
+    # SIGMOID Function
     def _sigmoid_function(self,weight,X):
         return 1./float(1+np.exp(-np.dot(X,weight)))
+    # Compute gradient to get find the next optimazation step
     def _get_gradient(self,X,y,weight):
         
         derivate = np.zeros(self.num_pixels)
@@ -37,11 +43,10 @@ class logisticRegression:
         elif self.regu_type == 'L2':
             derivate += 2 * weight * self.regu_lambda        
         return derivate
-    
+    # Comput loss function to optimaze module
     def loss_function(self,X,y,weight):
         loss = 0.0
-        #print(-np.dot(X[0],weight))
-        for i in xrange(len(y)):
+        for i in xrange(len(y)):            #Take different value if label is different
             if y[i]:
                 loss -= np.log(self._sigmoid_function(weight,X[i]))
             else:
@@ -56,7 +61,7 @@ class logisticRegression:
    
         return loss
 
-
+    # Evaluate the module's performance
     def percent_correct(self,X,y,weight):
         correct = 0
         for i in range(len(y)):
@@ -66,7 +71,7 @@ class logisticRegression:
             elif y_hat < 0.5 and y[i] == 0:
                 correct += 1
         return correct/self.num_samples
-
+    #Train our model
     def train(self,X,y):
         weight = self.init_weight
        
@@ -74,19 +79,17 @@ class logisticRegression:
         holdon_X = X[int(self.num_samples):]
         training_y = y[:int(self.num_samples)]
         holdon_y = y[int(self.num_samples):]  
-        #print(self.num_samples,len(training_X),len(holdon_X),len(holdon_y))
+        
+        # start iteration here
         for i in range(self.max_iterate):
             stepSize = self.init_learningrate/ (1 + np.float(i/self.T))
-            #print(stepSize)
-            derivative = self._get_gradient(training_X,training_y,weight)
-            #print(derivative)
-            weight -= stepSize * derivative
-            #print(weight)
+            derivative = self._get_gradient(training_X,training_y,weight) #To get next step
+            weight -= stepSize * derivative                #Re-evaluate the weight
             self.weight_record.append(weight[:])
             train_loss = self.loss_function(training_X,training_y,weight)
             holdon_loss = self.loss_function(holdon_X,holdon_y,weight)
             self.train_loss.append(train_loss)
-            self.holdon_loss.append(holdon_loss)
+            self.holdon_loss.append(holdon_loss)            # Recorde results
             
             train_error = self.percent_correct(training_X,training_y,weight)
             holdon_error = self.percent_correct(holdon_X,holdon_y,weight)
@@ -102,6 +105,7 @@ class logisticRegression:
         self.weight = weight
         #print(self.train_loss)
         return self.weight
+
     def plot_lines(self):
         xaxis = [i for i in range(len(self.train_loss))]
         plt.plot(xaxis, self.train_loss)
